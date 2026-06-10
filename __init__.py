@@ -1,1 +1,1 @@
-from .RunningAnalysis import RunningAnalysis
+from .RunningAnalyzer import RunningAnalyzer

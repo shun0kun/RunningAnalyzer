@@ -16,8 +16,8 @@ class StancePhase:
 		self.gct = t[-1] - t[0]
 		self.theta = self._compute_theta()
 		self.l_min = self._compute_l_min()
-		self.t_norm, self.fz_norm = utils.time_normalize(self.t_local, self.fz)
-		_, self.d_y_norm = utils.time_normalize(self.t_local, self.d_y)
+		# self.t_norm, self.fz_norm = utils.time_normalize(self.t_local, self.fz)
+		# _, self.d_y_norm = utils.time_normalize(self.t_local, self.d_y)
 		self.kvert = self._compute_kvert()
 		self.kleg = self._compute_kleg()
 
@@ -32,13 +32,20 @@ class StancePhase:
 		return d_y
 
 	def _compute_theta(self) -> float:
-		return np.arcsin((self.u * self.gct) / (2 * self.l0))
+		x = (self.u * self.gct) / (2 * self.l0)
+		if abs(x) > 1:
+			self.is_valid = False
+			return 0.0
+		else:
+			return np.arcsin(x)
 
 	def _compute_l_min(self) -> float:
-		return self.l0 * np.cos(self.theta) - max(self.d_y)
+		i_bottom = self.fz.argmax()
+		return self.l0 * np.cos(self.theta) - abs(self.d_y[0] - self.d_y[i_bottom])
 
 	def _compute_kvert(self) -> float:
-		return max(self.fz) / max(self.d_y)
+		i_bottom = self.fz.argmax()
+		return max(self.fz) / abs(self.d_y[0] - self.d_y[i_bottom])
 
 	def _compute_kleg(self) -> float:
 		return max(self.fz) / (self.l0 - self.l_min)

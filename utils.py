@@ -33,14 +33,14 @@ def time_normalize(time: list[float], signal: list[float], n_points: int = 101) 
 		i += 1
 	return time_norm, signal_norm
 
-def integrate_trapezoidal(x: np.ndarray, f: np.ndarray, y0: float, direction: str = "forward") -> np.ndarray:
-	y = np.empty(len(x))
-	if direction == "backward":
-		y[len(x) - 1] = y0
-		for i in range(len(x) - 1, 0, -1):
-			y[i - 1] = y[i] + lerp(f[i - 1], f[i], 0.5) * (x[i - 1] - x[i])
-	else:
-		y[0] = y0
-		for i in range(len(x) - 1):
-			y[i + 1] = y[i] + lerp(f[i], f[i + 1], 0.5) * (x[i + 1] - x[i])
+def cumulative_integrate_trapezoidal(x: list[float], derivative: list[float], y0: float) -> list[float]:
+	if len(x) != len(derivative):
+		raise ValueError("Invalid arguments")
+	y = [0.0] * len(x)
+	y[0] = y0
+	for i in range(len(x) - 1):
+		y[i + 1] = y[i] + lerp(derivative[i], derivative[i + 1], 0.5) * (x[i + 1] - x[i])
 	return y
+
+def threshold(signal: list[float], threshold: float | int) -> list[float]:
+	return [x if x >= threshold else 0.0 for x in signal]
