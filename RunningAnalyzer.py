@@ -4,22 +4,14 @@ from .Step import Step
 import utils
 from dataclasses import dataclass
 import numpy as np
+from .DataSet import RunningData
 
 G = 9.81
-
-@dataclass
-class DataSet:
-	mass: float
-	leg_length: float
-	time: list[float]
-	vgrf: list[float]
-	vacc: list[float]
-	vvel: list[float]
 
 class RunningAnalyzer:
 	def __init__(self, filepath: str, massdata: int | float | str, leg_length: int | float):
 		self.fp = ForcePlateData(filepath)
-		self.data = DataSet()
+		self.data = RunningData()
 		self.data.mass = self._resolve_mass(massdata)
 		self.data.leg_length = float(leg_length)
 		self.data.time = self.fp.read("time")
@@ -53,7 +45,7 @@ class RunningAnalyzer:
 		return vvel
 
 	@staticmethod
-	def _extract_steps(data: DataSet) -> list[Step]:
+	def _extract_steps(data: RunningData) -> list[Step]:
 		steps = []
 		is_contact = data.vgrf[0] > 0.0
 		left = None
@@ -65,5 +57,5 @@ class RunningAnalyzer:
 				is_contact = False
 				right = i
 				if left is not None:
-					steps.append(Step())
+					steps.append(data.extract_step(left, right))
 		return steps
