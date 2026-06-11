@@ -42,5 +42,13 @@ def cumulative_integrate_trapezoidal(x: list[float], derivative: list[float], y0
 		y[i + 1] = y[i] + lerp(derivative[i], derivative[i + 1], 0.5) * (x[i + 1] - x[i])
 	return y
 
+def integrate_trapezoidal(x: list[float], derivative: list[float], y0: float) -> float:
+	if len(x) != len(derivative):
+		raise ValueError("Invalid arguments")
+	y_sum = 0.0
+	for i in range(len(x) - 1):
+		y_sum += lerp(derivative[i], derivative[i + 1], 0.5) * (x[i + 1] - x[i])
+	return y0 + y_sum
+
 def threshold(signal: list[float], threshold: float | int) -> list[float]:
 	return [x if x >= threshold else 0.0 for x in signal]

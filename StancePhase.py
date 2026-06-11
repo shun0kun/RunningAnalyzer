@@ -28,7 +28,7 @@ class StancePhase:
 		v = np.empty(len(self.t_local))
 		v[:i_bottom+1] = utils.integrate_trapezoidal(self.t_local[:i_bottom+1], a[:i_bottom+1], 0, "backward")
 		v[i_bottom:] = utils.integrate_trapezoidal(self.t_local[i_bottom:], a[i_bottom:], 0)
-		d_y = utils.integrate_trapezoidal(self.t_local, v, 0)
+		d_y = utils.integrate_trapezoidal(self.t_local, v, 0.0)
 		return d_y
 
 	def _compute_theta(self) -> float:
