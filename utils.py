@@ -1,7 +1,7 @@
 import numpy as np
 
-def lowpass():
-	return
+# def lowpass():
+# 	return
 
 def lerp(a: float, b: float, t: float) -> float:
 	return a + t * (b - a)

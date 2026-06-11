@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from .constants import LEFT, RIGHT
+
 
 @dataclass
 class StepData:
@@ -11,7 +13,6 @@ class StepData:
 	vacc: list[float] | None = None
 	vvel: list[float] | None = None
 	fvel: list[float] | None = None
-
 	vdisp: list[float] | None = None
 	vgrf_norm: list[float] | None = None
 	vacc_norm: list[float] | None = None
@@ -25,8 +26,8 @@ class StepData:
 	kvert: float | None = None
 
 	side: int | None = None
-	toe_off_index: int | None
-	bottom_index: int | None
+	toe_off_index: int | None = None
+	bottom_index: int | None = None
 
 @dataclass
 class RunningData:
@@ -38,7 +39,8 @@ class RunningData:
 	vgrf_right: list[float] | None = None
 	vacc: list[float] | None = None
 	vvel: list[float] | None = None
-	fvel: list[float] | None = None
+	fvel_left: list[float] | None = None
+	fvel_right: list[float] | None = None
 
 	def extract_step(self, left: int, right: int) -> StepData:
 		if left > right or left < 0 or right > len(self.time) - 1:
@@ -52,7 +54,14 @@ class RunningData:
 		step.vgrf_right = self.vgrf_right[left:right+1]
 		step.vacc = self.vacc[left:right+1]
 		step.vvel = self.vvel[left:right+1]
-		step.fvel = self.fvel[left:right+1]
+		step.side = self._determine_side(left, right)
+		step.fvel = self.fvel_left[left:right+1] if step.side == LEFT else self.fvel_right[left:right+1]
 		return step
-
+	
+	def _determine_side(self, left: int, right: int) -> int:
+		left_ratio = sum(self.vgrf_left[left:right+1]) / sum(self.vgrf[left:right+1])
+		right_ratio = sum(self.vgrf_right[left:right+1]) / sum(self.vgrf[left:right+1])
+		if left_ratio > right_ratio:
+			return LEFT
+		return RIGHT
 

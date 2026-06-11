@@ -1,17 +1,12 @@
 from DataSet import StepData
 import utils
 import numpy as np
-
-G = 9.81
-
-LEFT = 0
-RIGHT = 1
+from .constants import G, LEFT, RIGHT
 
 class Step:
 	def __init__(self, data: StepData):
 		self.is_valid = True
 		self.data = data
-		self.data.side = self._determine_side(data.vgrf, data.vgrf_left, data.vgrf_right)
 		self.data.toe_off_index = self.data.vgrf.index(0.0)
 		self.data.vdisp = self._compute_vdisp(self.data.time, self.data.vvel)
 		self.data.bottom_index = self.data.vdisp.index(min(self.data.vdisp[:self.data.toe_off_index]))
@@ -23,15 +18,6 @@ class Step:
 		self.data.leg_compressed = self._compute_leg_compressed(self.data.leg_length, self.data.theta, abs(self.data.vdisp[self.data.bottom_index]))
 		self.data.kleg = self._compute_leg_stiffness(self.data.vgrf[self.data.bottom_index], self.data.leg_compressed)
 		self.data.kvert = self._compute_vertical_stiffness(self.data.vgrf[self.data.bottom_index], abs(self.data.vdisp[self.data.bottom_index]))
-
-	@staticmethod	
-	def _determine_side(vgrf: list[float], vgrf_left: list[float], vgrf_right: list[float]) -> int:
-		right_ratio = sum(vgrf_right) / sum(vgrf)
-		left_ratio = sum(vgrf_left) / sum(vgrf)
-		if left_ratio > right_ratio:
-			return LEFT
-		else:
-			return RIGHT
 
 	@staticmethod	
 	def _compute_vdisp(time: list[float], vvel: list[float]) -> list[float]:
