@@ -50,12 +50,12 @@ class RunningAnalyzer:
 		is_contact = data.vgrf[0] > 0.0
 		left = None
 		for i in range(len(data.vgrf)):
-			if not is_contact and data.vgrf[i] > 0.0:
-				is_contact = True
-				left = i - 1
-			elif is_contact and data.vgrf[i] == 0.0:
+			if is_contact and data.vgrf[i] == 0.0:
 				is_contact = False
-				right = i
+			elif not is_contact and data.vgrf[i] > 0.0:
+				is_contact = True
+				right = i - 1
 				if left is not None:
-					steps.append(data.extract_step(left, right))
+					steps.append(Step(data.extract_step(left, right)))
+				left = i
 		return steps
