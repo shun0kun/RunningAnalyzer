@@ -1,5 +1,5 @@
-from DataSet import StepData
-import utils
+from .DataSet import StepData
+from . import utils
 import numpy as np
 from .constants import G, LEFT, RIGHT
 
@@ -8,12 +8,16 @@ class Step:
 		self.is_valid = True
 		self.data = data
 		self.data.toe_off_index = self.data.vgrf.index(0.0)
+		self.data.vgrf_max = max(self.data.vgrf)
+		if self.data.vgrf_max < self.data.mass * G:
+			self.invalidate()
+			return
 		self.data.vdisp = self._compute_vdisp(self.data.time, self.data.vvel)
 		self.data.bottom_index = self.data.vdisp.index(min(self.data.vdisp[:self.data.toe_off_index]))
 		self.data.gct = self.data.time[self.data.toe_off_index] - self.data.time[0]
 		self.data.theta = self._compute_theta(self.data.time, self.data.fvel, self.data.toe_off_index, self.data.leg_length)
 		if self.data.theta is None:
-			self.is_valid = False
+			self.invalidate()
 			return
 		self.data.leg_compressed = self._compute_leg_compressed(self.data.leg_length, self.data.theta, abs(self.data.vdisp[self.data.bottom_index]))
 		self.data.kleg = self._compute_leg_stiffness(self.data.vgrf[self.data.bottom_index], self.data.leg_compressed)
@@ -45,3 +49,9 @@ class Step:
 		if delta_y == 0.0:
 			return None
 		return vgrf_bottom / delta_y
+
+	def validate(self) -> None:
+		self.is_valid = True
+
+	def invalidate(self) -> None:
+		self.is_valid = False

@@ -1,9 +1,10 @@
-import numpy
 from force_plate_data import ForcePlateData
 from .Step import Step
-import utils
+from . import utils
 from dataclasses import dataclass
+from collections.abc import Iterable
 import numpy as np
+import matplotlib.pyplot as plt
 from .DataSet import RunningData
 from .constants import G, LEFT, RIGHT
 
@@ -14,21 +15,27 @@ class RunningAnalyzer:
 		self.data.mass = self._resolve_mass(massdata)
 		self.data.leg_length = float(leg_length)
 		self.data.time = self.fp.get("時刻")
-		self.data.vgrf = self._preprocess_vgrf(self.fp.read("合成-Fz"))
+		self.data.vgrf = self._preprocess_vgrf(self.fp.get("合成-Fz"))
 		self.data.vgrf_left = self.fp.get("左-Fz")
 		self.data.vgrf_right = self.fp.get("右-Fz")
 		self.data.vacc = self._compute_vertical_acceleration(self.data.mass, self.data.time, self.data.vgrf)
 		self.data.vvel = self._compute_vertical_velocity(self.data.time, self.data.vacc, self.data.vgrf)
-		self.data.fvel_left = self.fp.get("左-速度計")
-		self.data.fvel_right = self.fp.get("右-速度計")
+		self.data.fvel_left = self.fp.get("左-速度")
+		self.data.fvel_right = self.fp.get("右-速度")
 		self.steps = self._extract_steps(self.data)
+		self.data.n_steps = len([step for step in self.steps if step.is_valid])
+
+		self.data.kleg_left_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == LEFT])
+		self.data.kleg_right_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == RIGHT])
+		self.data.kvert_left_mean = np.mean([x.data.kvert for x in self.steps if x.is_valid and x.data.side == LEFT])
+		self.data.kvert_right_mean = np.mean([x.data.kvert for x in self.steps if x.is_valid and x.data.side == RIGHT])
 
 	@staticmethod
 	def _resolve_mass(massdata: int | float | str) -> float:
 		if isinstance(massdata, (int, float)):
 			return float(massdata)
 		fp = ForcePlateData(massdata)
-		mass = np.mean(fp.read("合成-Fz")) / G
+		mass = np.mean(fp.get("合成-Fz")) / G
 		return float(mass)
 	
 	@staticmethod
@@ -78,3 +85,50 @@ class RunningAnalyzer:
 					steps.append(Step(data.extract_step(left, right)))
 				left = i
 		return steps
+
+	def _reanalyze(self) -> None:
+		self.data.kleg_left_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == LEFT])
+		self.data.kleg_right_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == RIGHT])
+		self.data.kvert_left_mean = np.mean([x.data.kvert for x in self.steps if x.is_valid and x.data.side == LEFT])
+		self.data.kvert_right_mean = np.mean([x.data.kvert for x in self.steps if x.is_valid and x.data.side == RIGHT])		
+
+	def invalidate_steps(self, ids: int | Iterable[int]) -> None:
+		if isinstance(ids, int):
+			ids = [ids]
+		for i in ids:
+			self.steps[i].invalidate()
+			self.data.n_steps -= 1
+		self._reanalyze()
+
+	def validate_steps(self, ids: int | Iterable[int]) -> None:
+		if isinstance(ids, int):
+			ids = [ids]
+		for i in ids:
+			self.steps[i].validate()
+			self.data.n_steps += 1
+		self._reanalyze()
+
+	def select_steps(self, ids: int | Iterable[int]) -> None:
+		self.invalidate_steps(range(len(self.steps)))
+		self.validate_steps(ids)
+
+	def export_check_steps_fig(self) -> None:
+		plt.figure(figsize=(60,4.8))
+		plt.plot(self.data.time, self.data.vgrf, color="black", alpha=1.0, linewidth=1.0)
+		turn = 0
+		for i, step in enumerate(self.steps):
+			if step.is_valid:
+				if step.data.side == RIGHT:
+					plt.plot(step.data.global_time, step.data.vgrf, color="red", alpha=1.0, linewidth="1.0")
+					plt.text(step.data.global_time[0], max(step.data.vgrf) + 30, str(i), fontsize=5, color="red")
+				else:
+					plt.plot(step.data.global_time, step.data.vgrf, color="blue", alpha=1.0, linewidth=1.0)
+					plt.text(step.data.global_time[0], max(step.data.vgrf) + 30, str(i), fontsize=5, color="blue")
+				turn += 1
+			else:
+				plt.text(step.data.global_time[0], max(step.data.vgrf) + 30, str(i), fontsize=5, color="black")
+		plt.xlabel("Time [s]")
+		plt.ylabel("vGRF [N]")
+		plt.title("Valid Steps (Red=Valid R, Blue=Valid L, Black=Invalid)")
+		plt.savefig("valid_steps.png", dpi=500)
+		plt.close()

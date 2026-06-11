@@ -7,6 +7,7 @@ class StepData:
 	mass: float | None = None
 	leg_length: float | None = None
 	time: list[float] | None = None
+	global_time: list[float] | None = None
 	vgrf: list[float] | None = None
 	vgrf_left: list[float] | None = None	
 	vgrf_right: list[float] | None = None
@@ -19,6 +20,7 @@ class StepData:
 	vvel_norm: list[float] | None = None
 	fvel_norm: list[float] | None = None
 	vdisp_norm: list[float] | None = None
+	vgrf_max: list[float] | None = None
 	gct: float | None = None
 	theta: float | None = None
 	leg_compressed: float | None = None
@@ -42,13 +44,21 @@ class RunningData:
 	fvel_left: list[float] | None = None
 	fvel_right: list[float] | None = None
 
+	kleg_right_mean: float | None = None
+	kleg_left_mean: float | None = None
+	kvert_right_mean: float | None = None
+	kvert_left_mean: float | None = None
+
+	n_steps: int | None = None
+
 	def extract_step(self, left: int, right: int) -> StepData:
 		if left > right or left < 0 or right > len(self.time) - 1:
 			raise ValueError("Invalid indexes")
 		step = StepData()
 		step.mass = self.mass
 		step.leg_length = self.leg_length
-		step.time = self.time[left:right+1]
+		step.time = [t - self.time[left] for t in self.time[left:right+1]]
+		step.global_time = self.time[left:right+1]
 		step.vgrf = self.vgrf[left:right+1]
 		step.vgrf_left = self.vgrf_left[left:right+1]
 		step.vgrf_right = self.vgrf_right[left:right+1]
