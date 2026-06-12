@@ -27,6 +27,15 @@ class RunningAnalyzer:
 		self.steps = self._extract_steps(self.data)
 		self.data.n_steps = len([step for step in self.steps if step.is_valid])
 
+		# stance phaseにおけるもの
+		self.data.time_mean = [i / 100.0 for i in range(101)]
+		self.data.vacc_mean = [np.mean([step.data.vacc_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+		self.data.vvel_mean = [np.mean([step.data.vvel_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+		self.data.vdisp_mean = [np.mean([step.data.vdisp_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+		self.data.vgrf_mean = [np.mean([step.data.vgrf_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+		self.data.vgrf_left_mean = [np.mean([step.data.vgrf_left_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+		self.data.vgrf_right_mean = [np.mean([step.data.vgrf_right_norm[i] for step in self.steps if step.is_valid]) for i in range(len(self.data.time_mean))]
+
 		self.data.kleg_left_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == LEFT])
 		self.data.kleg_right_mean = np.mean([x.data.kleg for x in self.steps if x.is_valid and x.data.side == RIGHT])
 		self.data.kvert_left_mean = np.mean([x.data.kvert for x in self.steps if x.is_valid and x.data.side == LEFT])

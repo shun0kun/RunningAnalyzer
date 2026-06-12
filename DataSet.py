@@ -14,12 +14,17 @@ class StepData:
 	vacc: list[float] | None = None
 	vvel: list[float] | None = None
 	fvel: list[float] | None = None
+
 	vdisp: list[float] | None = None
+
+	# stance phaseにおけるもの
+	time_norm: list[float] | None = None
 	vgrf_norm: list[float] | None = None
 	vacc_norm: list[float] | None = None
 	vvel_norm: list[float] | None = None
 	fvel_norm: list[float] | None = None
 	vdisp_norm: list[float] | None = None
+
 	vgrf_max: list[float] | None = None
 	gct: float | None = None
 	theta: float | None = None
@@ -44,6 +49,17 @@ class RunningData:
 	fvel_left: list[float] | None = None
 	fvel_right: list[float] | None = None
 
+	# stance phaseにおけるもの
+	time_norm: list[float] | None = None
+	vacc_mean: list[float] | None = None
+	vvel_mean: list[float] | None = None
+	vdisp_mean: list[float] | None = None
+	vgrf_mean: list[float] | None = None
+	vgrf_right_mean: list[float] | None = None
+	vgrf_left_mean: list[float] | None = None
+
+	kleg_mean: list[float] | None = None
+	kvert_mean: list[float] | None = None
 	kleg_right_mean: float | None = None
 	kleg_left_mean: float | None = None
 	kvert_right_mean: float | None = None

@@ -13,6 +13,11 @@ class Step:
 			self.invalidate()
 			return
 		self.data.vdisp = self._compute_vdisp(self.data.time, self.data.vvel)
+		self.data.time_norm, self.data.vgrf_norm = utils.time_normalize(self.data.time[:self.data.toe_off_index], self.data.vgrf[:self.data.toe_off_index])
+		_, self.data.vacc_norm = utils.time_normalize(self.data.time[:self.data.toe_off_index], self.data.vacc[:self.data.toe_off_index])
+		_, self.data.vvel_norm = utils.time_normalize(self.data.time[:self.data.toe_off_index], self.data.vvel[:self.data.toe_off_index])
+		_, self.data.fvel_norm = utils.time_normalize(self.data.time[:self.data.toe_off_index], self.data.fvel[:self.data.toe_off_index])
+		_, self.data.vdisp_norm = utils.time_normalize(self.data.time[:self.data.toe_off_index], self.data.vdisp[:self.data.toe_off_index])
 		self.data.bottom_index = self.data.vdisp.index(min(self.data.vdisp[:self.data.toe_off_index]))
 		self.data.gct = self.data.time[self.data.toe_off_index] - self.data.time[0]
 		self.data.theta = self._compute_theta(self.data.time, self.data.fvel, self.data.toe_off_index, self.data.leg_length)
