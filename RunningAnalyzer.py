@@ -11,6 +11,7 @@ from .constants import G, LEFT, RIGHT
 class RunningAnalyzer:
 	def __init__(self, filepath: str, massdata: int | float | str, leg_length: int | float):
 		self.fp = ForcePlateData(filepath)
+
 		self.data = RunningData()
 		self.data.mass = self._resolve_mass(massdata)
 		self.data.leg_length = float(leg_length)
@@ -22,6 +23,7 @@ class RunningAnalyzer:
 		self.data.vvel = self._compute_vertical_velocity(self.data.time, self.data.vacc, self.data.vgrf)
 		self.data.fvel_left = self.fp.get("左-速度")
 		self.data.fvel_right = self.fp.get("右-速度")
+
 		self.steps = self._extract_steps(self.data)
 		self.data.n_steps = len([step for step in self.steps if step.is_valid])
 
@@ -37,7 +39,7 @@ class RunningAnalyzer:
 		fp = ForcePlateData(massdata)
 		mass = np.mean(fp.get("合成-Fz")) / G
 		return float(mass)
-	
+
 	@staticmethod
 	def _preprocess_vgrf(vgrf_raw: list[float]) -> list[float]:
 		# lowpass filterはここに入れる
@@ -48,6 +50,7 @@ class RunningAnalyzer:
 	def _compute_vertical_acceleration(mass: float, time: list[float], vgrf: list[float]) -> list[float]:
 		return [(f - mass * G) / mass for f in vgrf]
 
+	#真のmid pointが取れていない
 	@staticmethod
 	def _compute_vertical_velocity(time: list[float], vacc: list[float], vgrf: list[float]) -> list[float]:
 		swing_mid_indices = []

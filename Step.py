@@ -27,12 +27,14 @@ class Step:
 	def _compute_vdisp(time: list[float], vvel: list[float]) -> list[float]:
 		return utils.cumulative_integrate_trapezoidal(time, vvel, 0.0)
 
+	# 算出精度が少々心配。速度定数か平均にするのも検討しておく。fvelの値がしっかりしてれば大丈夫かも。速度計じゃなくて速度の方を使っていれば。
 	@staticmethod
 	def _compute_theta(time: list[float], fvel: list[float], toe_off_index: int, leg_length: float) -> float | None:
 		sin_val = utils.integrate_trapezoidal(time[:toe_off_index+1], fvel[:toe_off_index+1], 0.0) / (2 * leg_length)
 		if abs(sin_val) > 1.0:
 			return None
-		return np.arcsin(sin_val)
+		theta = np.arcsin(sin_val)
+		return theta
 
 	@staticmethod	
 	def _compute_leg_compressed(leg_length: float, theta: float, delta_y: float) -> float:

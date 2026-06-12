@@ -51,6 +51,13 @@ class RunningData:
 
 	n_steps: int | None = None
 
+	def _determine_side(self, left: int, right: int) -> int:
+		left_ratio = sum(self.vgrf_left[left:right+1]) / sum(self.vgrf[left:right+1])
+		right_ratio = sum(self.vgrf_right[left:right+1]) / sum(self.vgrf[left:right+1])
+		if left_ratio > right_ratio:
+			return LEFT
+		return RIGHT
+
 	def extract_step(self, left: int, right: int) -> StepData:
 		if left > right or left < 0 or right > len(self.time) - 1:
 			raise ValueError("Invalid indexes")
@@ -67,11 +74,3 @@ class RunningData:
 		step.side = self._determine_side(left, right)
 		step.fvel = self.fvel_left[left:right+1] if step.side == LEFT else self.fvel_right[left:right+1]
 		return step
-	
-	def _determine_side(self, left: int, right: int) -> int:
-		left_ratio = sum(self.vgrf_left[left:right+1]) / sum(self.vgrf[left:right+1])
-		right_ratio = sum(self.vgrf_right[left:right+1]) / sum(self.vgrf[left:right+1])
-		if left_ratio > right_ratio:
-			return LEFT
-		return RIGHT
-
